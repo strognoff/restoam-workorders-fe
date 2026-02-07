@@ -1,0 +1,200 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_WORKORDER_API || 'http://localhost:8082/restoam/workorders';
+
+const initialFilters = {
+  title: '',
+  status: '',
+  priority: ''
+};
+
+function WorkorderList() {
+  const [workorders, setWorkorders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [filters, setFilters] = useState(initialFilters);
+
+  const fetchWorkorders = () => {
+    setLoading(true);
+    axios.get(API_BASE, {
+      params: {
+        page,
+        size,
+        sortBy: 'createdDate',
+        sortDir: 'desc',
+        title: filters.title || undefined,
+        status: filters.status || undefined,
+        priority: filters.priority || undefined
+      }
+    })
+      .then(response => {
+        setWorkorders(response.data.content || []);
+        setTotalPages(response.data.totalPages || 0);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching workorders:', error);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchWorkorders();
+  }, [page, size, filters]);
+
+  const handleDelete = (id) => {
+    if (!window.confirm('Delete this workorder?')) return;
+    axios.delete(`${API_BASE}/${id}`)
+      .then(() => fetchWorkorders())
+      .catch(error => {
+        console.error('Error deleting workorder:', error);
+        alert('Failed to delete workorder.');
+      });
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({ ...filters, [name]: value });
+    setPage(0);
+  };
+
+  return (
+    <div>
+      <div className="form-section mb-4">
+        <h1 className="section-title">Workorders</h1>
+        <p className="text-muted">Track maintenance requests and assign priority.</p>
+        <div className="card-header-actions">
+          <Link to="/add" className="btn btn-primary">Add Workorder</Link>
+        </div>
+      </div>
+
+      <div className="form-section">
+        <div className="row g-3 mb-3">
+          <div className="col-md-4">
+            <input
+              type="text"
+              className="form-control"
+              name="title"
+              placeholder="Filter by title"
+              value={filters.title}
+              onChange={handleFilterChange}
+            />
+          </div>
+          <div className="col-md-4">
+            <select
+              className="form-select"
+              name="status"
+              value={filters.status}
+              onChange={handleFilterChange}
+            >
+              <option value="">All status</option>
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="DONE">Done</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+          <div className="col-md-4">
+            <select
+              className="form-select"
+              name="priority"
+              value={filters.priority}
+              onChange={handleFilterChange}
+            >
+              <option value="">All priority</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        {loading ? (
+          <p>Loading workorders...</p>
+        ) : (
+          <>
+            <div className="table-responsive">
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Asset ID</th>
+                    <th>Location ID</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {workorders.map(workorder => (
+                    <tr key={workorder.id}>
+                      <td>{workorder.title}</td>
+                      <td>{workorder.status}</td>
+                      <td>{workorder.priority}</td>
+                      <td>{workorder.assetId || '-'}</td>
+                      <td>{workorder.locationId || '-'}</td>
+                      <td>{workorder.createdDate ? new Date(workorder.createdDate).toLocaleString() : '-'}</td>
+                      <td>
+                        <Link to={`/edit/${workorder.id}`} className="btn btn-sm btn-warning me-2">Edit</Link>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={() => handleDelete(workorder.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center mt-3">
+              <div>
+                <button
+                  className="btn btn-outline-secondary me-2"
+                  onClick={() => setPage(Math.max(page - 1, 0))}
+                  disabled={page === 0}
+                >
+                  Prev
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => setPage(Math.min(page + 1, totalPages - 1))}
+                  disabled={page >= totalPages - 1 || totalPages === 0}
+                >
+                  Next
+                </button>
+              </div>
+              <div>
+                Page {page + 1} of {totalPages || 1}
+              </div>
+              <div>
+                <select
+                  className="form-select"
+                  value={size}
+                  onChange={(e) => {
+                    setSize(Number(e.target.value));
+                    setPage(0);
+                  }}
+                >
+                  {[5, 10, 20, 50].map(s => (
+                    <option key={s} value={s}>{s} / page</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default WorkorderList;
