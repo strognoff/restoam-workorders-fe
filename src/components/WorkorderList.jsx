@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_WORKORDER_API || 'http://localhost:8082/restoam/workorders';
+const ASSET_APP_URL = import.meta.env.VITE_ASSET_APP_URL || 'http://localhost:5173';
+const LOCATION_APP_URL = import.meta.env.VITE_LOCATION_APP_URL || 'http://localhost:5174';
 
 const initialFilters = {
   title: '',
@@ -125,8 +127,8 @@ function WorkorderList() {
                     <th>Title</th>
                     <th>Status</th>
                     <th>Priority</th>
-                    <th>Asset ID</th>
-                    <th>Location ID</th>
+                    <th>Asset</th>
+                    <th>Location</th>
                     <th>Created</th>
                     <th>Actions</th>
                   </tr>
@@ -137,8 +139,34 @@ function WorkorderList() {
                       <td>{workorder.title}</td>
                       <td>{workorder.status}</td>
                       <td>{workorder.priority}</td>
-                      <td>{workorder.assetId || '-'}</td>
-                      <td>{workorder.locationId || '-'}</td>
+                      <td>
+                        {workorder.assetId ? (
+                          <a
+                            className="btn btn-sm btn-outline-primary"
+                            href={`${ASSET_APP_URL}/edit/${workorder.assetId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            View Asset
+                          </a>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td>
+                        {workorder.locationId ? (
+                          <a
+                            className="btn btn-sm btn-outline-primary"
+                            href={`${LOCATION_APP_URL}/edit/${workorder.locationId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            View Location
+                          </a>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
                       <td>{workorder.createdDate ? new Date(workorder.createdDate).toLocaleString() : '-'}</td>
                       <td>
                         <Link to={`/edit/${workorder.id}`} className="btn btn-sm btn-warning me-2">Edit</Link>

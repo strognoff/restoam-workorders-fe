@@ -14,6 +14,8 @@ function App() {
             <div className="navbar-nav">
               <Link className="nav-link" to="/">Workorders</Link>
               <Link className="nav-link" to="/add">Add Workorder</Link>
+              <a className="nav-link" href={import.meta.env.VITE_ASSET_APP_URL || 'http://localhost:5173'} target="_blank" rel="noreferrer">Assets</a>
+              <a className="nav-link" href={import.meta.env.VITE_LOCATION_APP_URL || 'http://localhost:5174'} target="_blank" rel="noreferrer">Locations</a>
             </div>
           </div>
         </nav>
