@@ -6,6 +6,42 @@ const API_BASE = import.meta.env.VITE_WORKORDER_API || 'http://localhost:8082/re
 const ASSET_APP_URL = import.meta.env.VITE_ASSET_APP_URL || 'http://localhost:5173';
 const LOCATION_APP_URL = import.meta.env.VITE_LOCATION_APP_URL || 'http://localhost:5174';
 
+// Status chip colors
+const statusColors = {
+  OPEN: { bg: '#dbeafe', text: '#1e40af', label: 'Open' },
+  IN_PROGRESS: { bg: '#fef3c7', text: '#92400e', label: 'In Progress' },
+  DONE: { bg: '#dcfce7', text: '#166534', label: 'Done' },
+  CANCELLED: { bg: '#f3f4f6', text: '#4b5563', label: 'Cancelled' },
+};
+
+// Priority chip colors
+const priorityColors = {
+  LOW: { bg: '#e0f2fe', text: '#0369a1', label: 'Low' },
+  MEDIUM: { bg: '#fef9c3', text: '#854d0e', label: 'Medium' },
+  HIGH: { bg: '#fed7aa', text: '#c2410c', label: 'High' },
+  CRITICAL: { bg: '#fecaca', text: '#b91c1c', label: 'Critical' },
+};
+
+// Chip component
+function Chip({ value, colorMap }) {
+  const colors = colorMap[value] || { bg: '#f3f4f6', text: '#4b5563', label: value };
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '0.25rem 0.75rem',
+        borderRadius: '9999px',
+        fontSize: '0.75rem',
+        fontWeight: '600',
+        backgroundColor: colors.bg,
+        color: colors.text,
+      }}
+    >
+      {colors.label}
+    </span>
+  );
+}
+
 const initialFilters = {
   title: '',
   status: '',
@@ -137,8 +173,12 @@ function WorkorderList() {
                   {workorders.map(workorder => (
                     <tr key={workorder.id}>
                       <td>{workorder.title}</td>
-                      <td>{workorder.status}</td>
-                      <td>{workorder.priority}</td>
+                      <td>
+                        <Chip value={workorder.status} colorMap={statusColors} />
+                      </td>
+                      <td>
+                        <Chip value={workorder.priority} colorMap={priorityColors} />
+                      </td>
                       <td>
                         {workorder.assetId ? (
                           <a
