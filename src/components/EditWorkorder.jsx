@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import CopyIdField from './CopyIdField';
 
 const API_BASE = import.meta.env.VITE_WORKORDER_API || 'http://localhost:8082/restoam/workorders';
 
@@ -64,6 +65,7 @@ function EditWorkorder() {
       <h2 className="section-title">Edit Workorder</h2>
       <form onSubmit={handleSubmit}>
         <div className="row g-3">
+          <CopyIdField id={id} label="Workorder ID" />
           <div className="col-md-6">
             <label className="form-label">Title</label>
             <input
