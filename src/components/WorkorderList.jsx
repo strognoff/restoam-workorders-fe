@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import EmptyState from './EmptyState';
 
 const API_BASE = import.meta.env.VITE_WORKORDER_API || 'http://localhost:8082/restoam/workorders';
 const ASSET_APP_URL = import.meta.env.VITE_ASSET_APP_URL || 'http://localhost:5173';
@@ -100,6 +101,15 @@ function WorkorderList() {
     setPage(0);
   };
 
+  const clearFilters = () => {
+    setFilters(initialFilters);
+    setPage(0);
+  };
+
+  const hasActiveFilters = () => {
+    return filters.title || filters.status || filters.priority;
+  };
+
   return (
     <div>
       <div className="form-section mb-4">
@@ -154,6 +164,13 @@ function WorkorderList() {
 
         {loading ? (
           <p>Loading workorders...</p>
+        ) : workorders.length === 0 ? (
+          <EmptyState 
+            hasFilters={hasActiveFilters()}
+            onClearFilters={clearFilters}
+            entityName="Workorder"
+            createPath="/add"
+          />
         ) : (
           <>
             <div className="table-responsive">
